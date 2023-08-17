@@ -10,6 +10,6 @@ public class SpringController {
 
     @GetMapping("/getMessage")
     public String getMessage(){
-        return "hello world";
+        return "hello world hello";
     }
 }
