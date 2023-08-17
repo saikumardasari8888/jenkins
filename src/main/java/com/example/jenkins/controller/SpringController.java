@@ -18,4 +18,9 @@ public class SpringController {
     public String Message(@PathVariable("name") String name){
         return "hello "+name;
     }
+
+    @GetMapping("/message")
+    public String postMessage(){
+        return "hello world";
+    }
 }
