@@ -23,6 +23,11 @@ public class SpringController {
     public String postMessage(){
         return "hello world";
     }
+    @GetMapping("/saikumar")
+    public String saiMessage(){
+        return "hello saikumar";
+    }
+
 
     @GetMapping("/hello")
     public String helloMessage(){
