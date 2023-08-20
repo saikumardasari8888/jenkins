@@ -28,4 +28,9 @@ public class SpringController {
         return "hello saikumar";
     }
 
+
+    @GetMapping("/hello")
+    public String helloMessage(){
+        return "hello message";
+    }
 }
