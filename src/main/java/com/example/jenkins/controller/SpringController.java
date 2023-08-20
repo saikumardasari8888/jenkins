@@ -28,4 +28,9 @@ public class SpringController {
     public String helloMessage(){
         return "hello message";
     }
+
+    @GetMapping("/gali")
+    public String galiMessage(){
+        return "gali message";
+    }
 }
