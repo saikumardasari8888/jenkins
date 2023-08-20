@@ -23,4 +23,9 @@ public class SpringController {
     public String postMessage(){
         return "hello world";
     }
+
+    @GetMapping("/hello")
+    public String helloMessage(){
+        return "hello message";
+    }
 }
