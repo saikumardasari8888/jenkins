@@ -38,4 +38,10 @@ public class SpringController {
     public String galiMessage(){
         return "gali message";
     }
+
+
+    @GetMapping("/getNaveen/{name}")
+    public String NaveenMessage(@PathVariable("name") String name){
+        return name + " message";
+    }
 }
