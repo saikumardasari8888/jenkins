@@ -2,7 +2,6 @@
 		id 'java'
 		id 'org.springframework.boot' version '3.1.2'
 		id 'io.spring.dependency-management' version '1.1.2'
-		id 'war'
 	}
 
 	group = 'com.example'
@@ -20,7 +19,7 @@
 		implementation 'org.springframework.boot:spring-boot-starter-web'
 		testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	}
-	jar {
+	bootJar {
 	    archiveFileName = "jenkin.jar"
 	}
 	tasks.named('test') {
