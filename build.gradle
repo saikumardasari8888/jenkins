@@ -19,7 +19,7 @@
 		implementation 'org.springframework.boot:spring-boot-starter-web'
 		testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	}
-	jar {
+	bootJar {
 	    archiveFileName = "jenkin.jar"
 	}
 	tasks.named('test') {
