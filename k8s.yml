@@ -3,7 +3,7 @@ kind: Deployment
 metadata:
   name: mono-deployment
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       app: my-selector-app  # This is the label selector for matching Pods
@@ -17,3 +17,17 @@ spec:
           image: 423623829923.dkr.ecr.us-east-1.amazonaws.com/naveenrepo:latest
           ports:
             - containerPort: 8080
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: my-selector-app
+spec:
+  selector:
+    app: my-selector-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+  type: LoadBalancer
