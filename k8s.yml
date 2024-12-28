@@ -1,16 +1,16 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: deployment
 metadata:
-  name: MonoDeployment
+  name: mono-deployment
 spec:
   replicas: 2
   selector:
     matchLabels:
-      app: MySelectorApp  # This is the label selector for matching Pods
+      app: my-selector-app  # This is the label selector for matching Pods
   template:
     metadata:
       labels:
-        app: MySelectorApp  # This label must match the selector
+        app: my-selector-app  # This label must match the selector
     spec:
       containers:
         - name: naveencontainer

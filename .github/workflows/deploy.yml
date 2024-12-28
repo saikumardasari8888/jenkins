@@ -70,5 +70,5 @@ jobs:
       - name: Update EKS deployment
         run: |
           echo "Updating Kubernetes deployment with new image..."
-          kubectl set image deployment/MonoDeployment naveencontainer=${{ secrets.ECR_REPOSITORY_URI }}:$GITHUB_SHA
-          kubectl rollout status deployment/MonoDeployment
+          kubectl set image deployment/mono-deployment naveencontainer=${{ secrets.ECR_REPOSITORY_URI }}:$GITHUB_SHA
+          kubectl rollout status deployment/mono-deployment
