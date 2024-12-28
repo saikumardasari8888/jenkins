@@ -79,8 +79,14 @@ jobs:
         run: |
           echo "Setting up kubeconfig for Kubernetes deployment..."
           eksctl utils write-kubeconfig --cluster=naveen-cluster --region=${{ secrets.AWS_REGION }}
+        
+      # Step 9: Reauthenticate kubectl using AWS credentials
+      - name: Reauthenticate kubectl
+        run: |
+          echo "Reauthenticating kubectl with AWS credentials..."
+          aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name naveen-cluster
 
-      # Step 9: Update Kubernetes Deployment in EKS
+      # Step 10: Update Kubernetes Deployment in EKS
       - name: Update EKS deployment
         run: |
           echo "Updating Kubernetes deployment in EKS..."
