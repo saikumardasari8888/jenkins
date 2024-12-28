@@ -49,7 +49,7 @@ jobs:
               --version 1.28 \
               --nodes 1 \
               --node-type t2.micro \
-              --region $REGION\
+              --region $REGION \
               --zones ${ZONES:-"us-west-2a,us-west-2b,us-west-2c"}
           fi
 
