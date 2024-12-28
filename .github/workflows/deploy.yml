@@ -54,6 +54,9 @@ jobs:
           fi
 
       # Step 6: Build the project and generate the JAR file
+      # Step 6.1: Give execute permissions to gradlew
+      - name: Make gradlew executable
+        run: chmod +x ./gradlew
       - name: Build JAR file with Gradle
         run: |
           echo "Building the JAR file using Gradle..."
