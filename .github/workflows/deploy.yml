@@ -37,7 +37,7 @@ jobs:
       - name: Check or create EKS cluster
         run: |
           echo "Checking if the EKS cluster exists..."
-          CLUSTER_NAME="jt-cluster"
+          CLUSTER_NAME="naveen-cluster"
           REGION=${{ secrets.AWS_REGION }}
           
           if eksctl get cluster --region $REGION | grep -q $CLUSTER_NAME; then
