@@ -11,7 +11,7 @@ public class SpringController {
 
     @GetMapping("/getMessage")
     public String getMessage(){
-        return "hello world hello  ";
+        return "hello world hello   ";
     }
 
     @GetMapping("/greating/{name}")
