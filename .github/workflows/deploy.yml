@@ -33,64 +33,42 @@ jobs:
           curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
           sudo mv /tmp/eksctl /usr/local/bin
 
-      # Step 5: Check or create EKS cluster
-      - name: Check or create EKS cluster
-        run: |
-          echo "Checking if the EKS cluster exists..."
-          CLUSTER_NAME="naveen-demo2-cluster"
-          REGION=${{ secrets.AWS_REGION }}
-          
-          if eksctl get cluster --region $REGION | grep -q $CLUSTER_NAME; then
-            echo "Cluster $CLUSTER_NAME already exists."
-          else
-            echo "Cluster $CLUSTER_NAME does not exist. Creating it..."
-            eksctl create cluster \
-              --name $CLUSTER_NAME \
-              --version 1.28 \
-              --nodes 1 \
-              --node-type t2.small \
-              --region $REGION \
-              --zones ${ZONES:-"us-east-1a,us-east-1b,us-east-1c"}
-          fi
-
-      # Step 6: Build the project and generate the JAR file
-      # Step 6.1: Give execute permissions to gradlew
-      - name: Make gradlew executable
-        run: chmod +x ./gradlew
-      - name: Build JAR file with Gradle
-        run: |
-          echo "Building the JAR file using Gradle..."
-          ./gradlew build
-
-      # Step 7: Build and push Docker image to AWS ECR
-      - name: Build and push Docker image to ECR
-        run: |
-          echo "Logging in to ECR and building Docker image..."
-          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REPOSITORY_URI }}
-          
-          echo "Building Docker image..."
-          docker build -t ${{ secrets.ECR_REPOSITORY_URI }}:$GITHUB_SHA .
-          
-          echo "Pushing Docker image to ECR..."
-          docker push ${{ secrets.ECR_REPOSITORY_URI }}:$GITHUB_SHA
-
-      # Step 8: Set up kubeconfig for Kubernetes deployment
+      # Step 5: Set up kubeconfig for Kubernetes deployment
       - name: Set up kubeconfig
         run: |
           echo "Setting up kubeconfig for Kubernetes deployment..."
           eksctl utils write-kubeconfig --cluster=naveen-demo2-cluster --region=${{ secrets.AWS_REGION }}
-        
-      # Step 9: Reauthenticate kubectl using AWS credentials
+
+      # Step 6: Apply Kubernetes deployment
+      - name: Apply Kubernetes deployment
+        run: |
+          echo "Applying Kubernetes deployment using kubectl..."
+          kubectl apply -f ./k8s.yml
+
+      # Step 7: Reauthenticate kubectl using AWS credentials
       - name: Reauthenticate kubectl
         run: |
           echo "Reauthenticating kubectl with AWS credentials..."
           aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name naveen-demo2-cluster
 
-      # Step 10: Update Kubernetes Deployment in EKS
+      # Step 8: Build the project and generate the JAR file
+      - name: Build JAR file with Gradle
+        run: |
+          echo "Building the JAR file using Gradle..."
+          chmod +x ./gradlew
+          ./gradlew build
+
+      # Step 9: Build and push Docker image to ECR
+      - name: Build and push Docker image to ECR
+        run: |
+          echo "Logging in to ECR and building Docker image..."
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REPOSITORY_URI }}
+          docker build -t ${{ secrets.ECR_REPOSITORY_URI }}:$GITHUB_SHA .
+          docker push ${{ secrets.ECR_REPOSITORY_URI }}:$GITHUB_SHA
+
+      # Step 10: Update Kubernetes deployment
       - name: Update EKS deployment
         run: |
-          echo "Updating Kubernetes deployment in EKS..."
+          echo "Updating Kubernetes deployment with new image..."
           kubectl set image deployment/MonoDeployment naveencontainer=${{ secrets.ECR_REPOSITORY_URI }}:$GITHUB_SHA
-          
-          echo "Waiting for deployment to roll out..."
           kubectl rollout status deployment/MonoDeployment
