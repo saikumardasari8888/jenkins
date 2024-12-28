@@ -50,7 +50,7 @@ jobs:
               --nodes 1 \
               --node-type t2.small \
               --region $REGION \
-              --zones ${ZONES:-"us-west-2a,us-west-2b,us-west-2c"}
+              --zones ${ZONES:-"us-east-1a,us-east-1b,us-east-1c"}
           fi
 
       # Step 6: Build and push Docker image to AWS ECR
