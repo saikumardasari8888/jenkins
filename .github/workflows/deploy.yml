@@ -53,7 +53,13 @@ jobs:
               --zones ${ZONES:-"us-east-1a,us-east-1b,us-east-1c"}
           fi
 
-      # Step 6: Build and push Docker image to AWS ECR
+      # Step 6: Build the project and generate the JAR file
+      - name: Build JAR file with Gradle
+        run: |
+          echo "Building the JAR file using Gradle..."
+          ./gradlew build
+
+      # Step 7: Build and push Docker image to AWS ECR
       - name: Build and push Docker image to ECR
         run: |
           echo "Logging in to ECR and building Docker image..."
@@ -65,13 +71,13 @@ jobs:
           echo "Pushing Docker image to ECR..."
           docker push ${{ secrets.ECR_REPOSITORY_URI }}:$GITHUB_SHA
 
-      # Step 7: Set up kubeconfig for Kubernetes deployment
+      # Step 8: Set up kubeconfig for Kubernetes deployment
       - name: Set up kubeconfig
         run: |
           echo "Setting up kubeconfig for Kubernetes deployment..."
           eksctl utils write-kubeconfig --cluster=jt-cluster --region=${{ secrets.AWS_REGION }}
 
-      # Step 8: Update Kubernetes Deployment in EKS
+      # Step 9: Update Kubernetes Deployment in EKS
       - name: Update EKS deployment
         run: |
           echo "Updating Kubernetes deployment in EKS..."
