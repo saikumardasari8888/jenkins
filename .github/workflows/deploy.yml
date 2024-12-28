@@ -78,7 +78,7 @@ jobs:
       - name: Set up kubeconfig
         run: |
           echo "Setting up kubeconfig for Kubernetes deployment..."
-          eksctl utils write-kubeconfig --cluster=jt-cluster --region=${{ secrets.AWS_REGION }}
+          eksctl utils write-kubeconfig --cluster=naveen-cluster --region=${{ secrets.AWS_REGION }}
 
       # Step 9: Update Kubernetes Deployment in EKS
       - name: Update EKS deployment
