@@ -1,0 +1,86 @@
+name: Deploy to AWS EKS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout code
+        run: |
+          echo "Step 1: Checking out the code..."
+        uses: actions/checkout@v2
+
+      # Step 2: Set up Docker Buildx (for building multi-platform images)
+      - name: Set up Docker Buildx
+        run: |
+          echo "Step 2: Setting up Docker Buildx for multi-platform builds..."
+        uses: docker/setup-buildx-action@v2
+
+      # Step 3: Log in to AWS using GitHub secrets
+      - name: Set up AWS credentials
+        run: |
+          echo "Step 3: Configuring AWS credentials..."
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      # Step 4: Install eksctl
+      - name: Install eksctl
+        run: |
+          echo "Step 4: Installing eksctl for EKS cluster management..."
+          curl --silent --location "https://github.com/weaveworks/eksctl/releases/latest/download/eksctl_$(uname -s)_amd64.tar.gz" | tar xz -C /tmp
+          sudo mv /tmp/eksctl /usr/local/bin
+
+      # Step 5: Check or create EKS cluster
+      - name: Check or create EKS cluster
+        run: |
+          echo "Step 5: Checking if the EKS cluster exists..."
+          CLUSTER_NAME="jt-cluster"
+          REGION=${{ secrets.AWS_REGION }}
+          
+          if eksctl get cluster --region $REGION | grep -q $CLUSTER_NAME; then
+            echo "Cluster $CLUSTER_NAME already exists."
+          else
+            echo "Cluster $CLUSTER_NAME does not exist. Creating it..."
+            eksctl create cluster \
+              --name $CLUSTER_NAME \
+              --version 1.28 \
+              --nodes 1 \
+              --node-type t2.small \
+              --region $REGION
+          fi
+
+      # Step 6: Build and push Docker image to AWS ECR
+      - name: Build and push Docker image to ECR
+        run: |
+          echo "Step 6: Logging in to ECR and building Docker image..."
+          aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ secrets.ECR_REPOSITORY_URI }}
+          
+          echo "Building Docker image..."
+          docker build -t ${{ secrets.ECR_REPOSITORY_URI }}:$GITHUB_SHA .
+          
+          echo "Pushing Docker image to ECR..."
+          docker push ${{ secrets.ECR_REPOSITORY_URI }}:$GITHUB_SHA
+
+      # Step 7: Set up kubeconfig for Kubernetes deployment
+      - name: Set up kubeconfig
+        run: |
+          echo "Step 7: Setting up kubeconfig for Kubernetes deployment..."
+          eksctl utils write-kubeconfig --cluster=jt-cluster --region=${{ secrets.AWS_REGION }}
+
+      # Step 8: Update Kubernetes Deployment in EKS
+      - name: Update EKS deployment
+        run: |
+          echo "Step 8: Updating Kubernetes deployment in EKS..."
+          kubectl set image deployment/MonoDeployment naveencontainer=${{ secrets.ECR_REPOSITORY_URI }}:$GITHUB_SHA
+          
+          echo "Waiting for deployment to roll out..."
+          kubectl rollout status deployment/MonoDeployment

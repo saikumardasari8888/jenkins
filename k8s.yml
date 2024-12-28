@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: MonoDeployment
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: MySelectorApp
+  template:
+    metadata:
+      labels:
+        app: MySelectorTemplate
+    spec:
+      containers:
+        - name: your-container-name
+          image: ${ECR_REPOSITORY_URI}:${GITHUB_SHA}
+          ports:
+            - containerPort: 8080
