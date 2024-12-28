@@ -37,7 +37,7 @@ jobs:
       - name: Check or create EKS cluster
         run: |
           echo "Checking if the EKS cluster exists..."
-          CLUSTER_NAME="naveen-demo-cluster"
+          CLUSTER_NAME="naveen-demo1-cluster"
           REGION=${{ secrets.AWS_REGION }}
           
           if eksctl get cluster --region $REGION | grep -q $CLUSTER_NAME; then
@@ -84,7 +84,7 @@ jobs:
       - name: Reauthenticate kubectl
         run: |
           echo "Reauthenticating kubectl with AWS credentials..."
-          aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name naveen-demo-cluster
+          aws eks --region ${{ secrets.AWS_REGION }} update-kubeconfig --name naveen-demo1-cluster
 
       # Step 10: Update Kubernetes Deployment in EKS
       - name: Update EKS deployment
