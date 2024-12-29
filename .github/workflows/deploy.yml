@@ -26,47 +26,59 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
-      # Step 6: Update kubeconfig
+      # Step 4: Update kubeconfig for EKS cluster
       - name: Update kubeconfig
         run: |
           echo "Updating kubeconfig..."
           aws eks --region us-east-1 update-kubeconfig --name naveen-cluster    
 
-      # Step 7: Build the project and generate the JAR file
+      # Step 5: Build the project and generate the JAR file
       - name: Build JAR file with Gradle
         run: |
           echo "Building the JAR file using Gradle..."
           chmod +x ./gradlew
           ./gradlew build
 
-      # Step 8: Log in to ECR
+      # Step 6: Log in to ECR
       - name: Log in to ECR
         run: |
           echo "Logging in to ECR..."
           aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin 423623829923.dkr.ecr.us-east-1.amazonaws.com
 
-      # Step 9: Build and tag Docker image
+      # Step 7: Build and tag Docker image
       - name: Build and tag Docker image
         run: |
           echo "Building and tagging Docker image..."
-          docker build -t naveenrepo .
+          docker build -t naveenrepo:latest .
           docker tag naveenrepo:latest 423623829923.dkr.ecr.us-east-1.amazonaws.com/naveenrepo:latest
 
-      # Step 10: Push Docker image to ECR
+      # Step 8: Push Docker image to ECR
       - name: Push Docker image to ECR
         run: |
           echo "Pushing Docker image to ECR..."
           docker push 423623829923.dkr.ecr.us-east-1.amazonaws.com/naveenrepo:latest
 
-      # Step 11: Apply Kubernetes deployment
+      # Step 9: Apply Kubernetes deployment
       - name: Apply Kubernetes deployment
         run: |
           echo "Applying Kubernetes deployment..."
           kubectl apply -f k8s.yml --validate=false
 
-      # Step 12: Update deployment image
-      - name: Update deployment image
+      # Step 10: Force Kubernetes to pull the latest image
+      - name: Force Kubernetes to pull latest image
         run: |
           echo "Updating deployment image..."
-          kubectl set image deployment/mono-deployment naveencontainer=423623829923.dkr.ecr.us-east-1.amazonaws.com/naveenrepo:latest
+          kubectl set image deployment/mono-deployment naveencontainer=423623829923.dkr.ecr.us-east-1.amazonaws.com/naveenrepo:latest --record
+          kubectl rollout restart deployment/mono-deployment
+
+      # Step 11: Verify deployment rollout
+      - name: Verify deployment rollout
+        run: |
+          echo "Verifying deployment rollout..."
           kubectl rollout status deployment/mono-deployment
+
+      # Step 12: Cleanup old pods (optional, ensures no stale pods)
+      - name: Cleanup old pods
+        run: |
+          echo "Cleaning up old pods..."
+          kubectl delete pods -l app=my-selector-app --force --grace-period=0
