@@ -7,8 +7,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 public class SpringController {
-    @GetMapping("/getSai")
-    public String getMessage(){
-    return "hello world hello   ";
+    @GetMapping("/getSai/{message}")
+    public String getMessage(@PathVariable("message") String message){
+    return String.format("hello world :: %s", message);
     }
 }
